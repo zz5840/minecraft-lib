@@ -1,0 +1,25 @@
+{
+	"name": "minecraft-lib",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"scripts": {
+		"dev": "./node_modules/.bin/gulp dev"
+	},
+	"dependencies": {
+		"@types/fs-extra": "^5.0.2",
+		"download": "^7.0.0",
+		"fs-extra": "^6.0.1",
+		"pouchdb": "^6.4.3",
+		"request": "^2.87.0",
+		"request-promise-native": "^1.0.5"
+	},
+	"devDependencies": {
+		"@types/download": "^6.2.2",
+		"@types/node": "^10.1.2",
+		"@types/pouchdb": "^6.3.2",
+		"gulp": "^3.9.1",
+		"gulp-typescript": "^4.0.2",
+		"typescript": "^2.8.3"
+	}
+}
