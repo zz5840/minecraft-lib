@@ -8,7 +8,7 @@ export default class GameVersion {
 	private source: DownloadSource;
 
 	constructor () {
-		this.source = DownloadSource.OFFICIAL;
+		this.source = DownloadSource.Official;
 	}
 
 	/**
@@ -60,14 +60,6 @@ export default class GameVersion {
 				console.log('done');
 			});
 		});
-	}
-
-	/**
-	 * set download source
-	 * @param {DownloadSource} source
-	 */
-	public setSource (source: DownloadSource): void {
-		this.source = source;
 	}
 
 	/**

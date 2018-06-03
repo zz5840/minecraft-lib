@@ -13,7 +13,8 @@ declare namespace NodeJS {
 
 	interface RootPath {
 		root: string,
-		versions: string
+		versions: string,
+		assets: string
 	}
 }
 
@@ -32,5 +33,22 @@ declare namespace Game {
 		time: string,
 		releaseTime: string,
 		url: string
+	}
+
+	interface AssetsIndex {
+		objects: {
+			[key: string]: {
+				hash: string,
+				size: number
+			}
+		}
+	}
+}
+
+declare namespace Downloader {
+	interface DownloadListTask {
+		name: string,
+		url: string,
+		dest: string
 	}
 }

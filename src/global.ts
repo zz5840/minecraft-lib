@@ -1,6 +1,6 @@
 enum DownloadSource {
-	OFFICIAL = 0,
-	BMCLAPI = 1
+	Official = 'official',
+	BMCLApi = 'bmclapi'
 }
 
 export {DownloadSource};

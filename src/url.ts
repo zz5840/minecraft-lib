@@ -1,6 +1,6 @@
-const url: { [key: number]: any } = {
+const url: { [key: string]: any } = {
 	// official
-	0: {
+	official: {
 		versions: 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
 	}
 };

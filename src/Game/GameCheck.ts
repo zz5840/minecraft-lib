@@ -1,24 +1,33 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {version} from "punycode";
 
 export default class GameCheck {
-	private version: string;
+	private readonly version: string;
 
 	constructor (version: string) {
 		this.version = version;
 	}
 
 	checkVersionJson (): Promise<boolean> {
+		let version = this.version;
 		return new Promise<boolean>(resolve => {
-			fs.stat(path.join(__game.versions, `${version}.json`)).then((data: any) => {
-				console.log(data);
-			});
+			fs.stat(path.join(__game.versions, version, `${version}.json`)).then((data: any) => {
+				resolve(true);
+			}).catch(err => {
+				resolve(false);
+			})
 		})
 	}
 
-	checkVersionJar () {r
-
+	checkVersionJar () {
+		let version = this.version;
+		return new Promise<boolean>(resolve => {
+			fs.stat(path.join(__game.versions, version, `${version}.jar`)).then((data: any) => {
+				resolve(true);
+			}).catch(err => {
+				resolve(false);
+			})
+		})
 	}
 
 	checkLibraries () {
