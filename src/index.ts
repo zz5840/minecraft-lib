@@ -6,6 +6,8 @@ import GameDownload from "./Game/GameDownload";
 import GameCheck from "./Game/GameCheck";
 import DownloaderMain from "./Downloader/DownloaderMain";
 import * as _ from 'lodash';
+import * as logUpdate from 'log-update';
+import * as ProgressBarFormatter from 'progress-bar-formatter';
 
 global.__root = path.join(__dirname, '..');
 global.__download = path.join(__dirname, '../download');
@@ -29,17 +31,21 @@ _.forEach(index.objects, function (value, key) {
 	})
 });
 let d = new DownloaderMain(list, 32);
-d.event.on('progress', function (thread, done, total) {
-	console.log({
-		thread,
-		done,
-		total
-	});
+let status = new Array(32 + 1).fill('no task');
+let bar = new ProgressBarFormatter();
+d.event.on('progress', function (thread: number, index: number, state: Downloader.DownloadProgress) {
+	status[thread] = `Thread:${thread + 1} Name:${d.getTask(index).name} ${bar.format(state.percent)} ${(state.percent * 100).toFixed(2)}%`;
+	logUpdate(status.join("\n"));
 });
-d.event.on('done', function () {
+d.event.on('end', function () {
 	console.log('done');
+	logUpdate.clear();
 	let end = new Date().getTime();
 	console.log('use time: ' + (end - start) / 1000 + 's')
+});
+d.event.on('done', function (thread, index) {
+	let percent = d.getDoneNum() / list.length;
+	status[32] = `Total: ${bar.format(percent)} ${(percent * 100).toFixed(2)}%`;
 });
 d.start();
 let start = new Date().getTime();
