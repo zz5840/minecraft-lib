@@ -4,7 +4,7 @@ import config from './config';
 import * as path from "path";
 import GameDownload from "./Game/GameDownload";
 import GameCheck from "./Game/GameCheck";
-import DownloaderMain from "./Downloader/DownloaderMain";
+import DownloaderMultiThread from "./Downloader/DownloaderMultiThread";
 import * as _ from 'lodash';
 import * as logUpdate from 'log-update';
 import * as ProgressBarFormatter from 'progress-bar-formatter';
@@ -30,25 +30,46 @@ _.forEach(index.objects, function (value, key) {
 		dest: path.join(__game.assets, 'objects', value.hash.substr(0, 2))
 	})
 });
-let d = new DownloaderMain(list, 32);
-let status = new Array(32 + 1).fill('no task');
+
+let a: Array<Downloader.DownloadListTask> = [{
+	url: 'https://launcher.mojang.com/mc/game/1.12.2/client/0f275bc1547d01fa5f56ba34bdc87d981ee12daf/client.jar',
+	name: 'client.jar',
+	dest: __download
+}, {
+	url: 'https://launcher.mojang.com/mc/game/1.12.2/client/0f275bc1547d01fa5f56ba34bdc87d981ee12daf/client.jar',
+	name: 'client1.jar',
+	dest: __download
+}, {
+	url: 'https://launcher.mojang.com/mc/game/1.12.2/client/0f275bc1547d01fa5f56ba34bdc87d981ee12daf/client.jar',
+	name: 'client2.jar',
+	dest: __download
+}, {
+	url: 'https://launcher.mojang.com/mc/game/1.12.2/client/0f275bc1547d01fa5f56ba34bdc87d981ee12daf/client.jar',
+	name: 'client3.jar',
+	dest: __download
+}];
 let bar = new ProgressBarFormatter();
-d.event.on('progress', function (thread: number, index: number, state: Downloader.DownloadProgress) {
-	status[thread] = `Thread:${thread + 1} Name:${d.getTask(index).name} ${bar.format(state.percent)} ${(state.percent * 100).toFixed(2)}%`;
+let threadNum = 2;
+let d = new DownloaderMultiThread(a, threadNum);
+let status = new Array(threadNum + 1).fill('no task');
+status[threadNum] = `Total: ${bar.format(0)} 0%`;
+
+d.event.on('progress', (thread: number, index: number, state: Downloader.DownloadProgress) => {
+	status[thread] = `Thread:${thread + 1} Name:${d.getTask(index).name} ${bar.format(state.percent)} ${(state.percent * 100).toFixed(2)}% ${(state.speed / 1024 / 1024).toFixed(2)}MB/s`;
 	logUpdate(status.join("\n"));
 });
-d.event.on('end', function () {
-	console.log('done');
-	logUpdate.clear();
+d.event.on('end', () => {
+	console.log('download finished');
+	// logUpdate.clear();
 	let end = new Date().getTime();
-	console.log('use time: ' + (end - start) / 1000 + 's')
+	console.log('use time: ' + (end - start) / 1000 + 's');
 });
-d.event.on('done', function (thread, index) {
-	let percent = d.getDoneNum() / list.length;
-	status[32] = `Total: ${bar.format(percent)} ${(percent * 100).toFixed(2)}%`;
+d.event.on('done', (thread, index) => {
+	status[threadNum] = `Total: ${bar.format(d.getProgressPercent())} ${(d.getProgressPercent() * 100).toFixed(2)}%`;
 });
-d.start();
 let start = new Date().getTime();
+console.log('download started');
+d.start();
 
 /*let d = new GameDownload('1.12.2', '1.12.2', config.downloadSource);
 

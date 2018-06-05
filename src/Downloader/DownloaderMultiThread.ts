@@ -1,15 +1,12 @@
 import {EventEmitter} from 'events';
-import * as download from "download";
-import * as fs from "fs";
-import * as path from "path";
-import DownloaderTask from './DownloaderTask';
+import DownloaderMultiThreadTask from './DownloaderMultiThreadTask';
 
-export default class DownloaderMain {
+export default class DownloaderMultiThread {
 	public readonly event: EventEmitter;
 	private thread: number;
 	private list: Array<Downloader.DownloadListTask>;
 	private index: number;
-	private downloading: Array<DownloaderTask>;
+	private downloading: Array<DownloaderMultiThreadTask>;
 	private done: number;
 
 	/**
@@ -29,7 +26,6 @@ export default class DownloaderMain {
 	}
 
 	/**
-	 * get the number of downloaded files
 	 * @returns {number}
 	 */
 	public getDoneNum (): number {
@@ -37,7 +33,28 @@ export default class DownloaderMain {
 	}
 
 	/**
-	 * get specified task info by index
+	 * @returns {number}
+	 */
+	public getTotalNum (): number {
+		return this.list.length;
+	}
+
+	/**
+	 * @returns {number}
+	 */
+	public getRestNum (): number {
+		return this.getTotalNum() - this.getDoneNum();
+	}
+
+	/**
+	 * @returns {number}
+	 */
+	public getProgressPercent (): number {
+		return (this.getDoneNum() / this.getTotalNum());
+	}
+
+	/**
+	 * get specified task object by index
 	 * @param {number} index
 	 * @returns {Downloader.DownloadListTask}
 	 */
@@ -51,7 +68,7 @@ export default class DownloaderMain {
 	 */
 	public addTask (task: Downloader.DownloadListTask | Array<Downloader.DownloadListTask>) {
 		if (task instanceof Array) {
-			this.list.concat(task);
+			this.list.push(...task);
 		} else {
 			this.list.push(task);
 		}
@@ -61,7 +78,6 @@ export default class DownloaderMain {
 	 * start download (must be called manually)
 	 */
 	public start (): void {
-		console.log('started');
 		this.downloading = new Array(this.thread).fill(null);
 		this.downloading.forEach((value, index) => {
 			this.downloadedHandle(index);
@@ -75,8 +91,8 @@ export default class DownloaderMain {
 	public downloadedHandle (thread: number) {
 		let has = this.hasNextTask();
 		if (has) {
+			this.downloading[thread] = new DownloaderMultiThreadTask(thread, this.index, this);
 			this.index++;
-			this.downloading[thread] = new DownloaderTask(thread, this.index, this);
 		} else {
 			this.downloading[thread] = null;
 		}
@@ -86,13 +102,11 @@ export default class DownloaderMain {
 	 * judge if the download list has next task, if false, emit end event
 	 * @returns boolean
 	 */
-	private hasNextTask (): Downloader.DownloadListTask | boolean {
-		if (this.list.length === this.index + 1) {
-			// TODO  end event will be emitted many times
-			console.log(this.list.filter(val => val === null).length);
-			// if (this.list.filter(val => val === null).length === this.list.length - 1) {
-			// 	this.event.emit('end');
-			// }
+	private hasNextTask (): boolean {
+		if (this.list.length === this.index) {
+			if (this.downloading.filter(val => val === null).length === this.thread - 1) {
+				this.event.emit('end');
+			}
 			return false;
 		} else {
 			return true;
